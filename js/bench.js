@@ -11,19 +11,29 @@ export function runBench({ algoIds, sizes, runs = 3 }) {
   for (const id of algoIds) {
     const algo = getAlgorithm(id);
     if (!algo) continue;
-    const params = defaultParams(algo);
     const cells = {};
     for (const s of sizes) {
       const w = s;
       const h = Math.round(s * 0.625);
       const times = [];
+      let failed = false;
       for (let r = 0; r < runs; r++) {
-        const t0 = performance.now();
-        buildMap({ algoId: id, seed: "bench" + r, w, h, params, entities: { enabled: false } });
-        times.push(performance.now() - t0);
+        try {
+          const t0 = performance.now();
+          // 매 실행 파라미터 재생성(상호 오염 방지)
+          buildMap({ algoId: id, seed: "bench" + r, w, h, params: defaultParams(algo), entities: { enabled: false } });
+          times.push(performance.now() - t0);
+        } catch {
+          failed = true;
+          break;
+        }
       }
-      times.sort((a, b) => a - b);
-      cells[s] = { median: times[Math.floor(times.length / 2)], min: times[0] };
+      if (failed || times.length === 0) {
+        cells[s] = { median: NaN, min: NaN };
+      } else {
+        times.sort((a, b) => a - b);
+        cells[s] = { median: times[Math.floor(times.length / 2)], min: times[0] };
+      }
     }
     rows.push({ id, name: algo.name, cells });
   }

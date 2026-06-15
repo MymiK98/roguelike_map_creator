@@ -11,9 +11,13 @@ export function buildMap(config) {
   const algo = getAlgorithm(config.algoId);
   if (!algo) throw new Error("unknown algo: " + config.algoId);
 
+  // 차원 보정(오염된 import/공유코드로 0·NaN 방지)
+  const w = Math.max(4, Math.min(400, Math.floor(config.w) || 0));
+  const h = Math.max(4, Math.min(400, Math.floor(config.h) || 0));
+
   const rng = makeRNG(config.seed);
   const t0 = typeof performance !== "undefined" ? performance.now() : 0;
-  const grid = algo.generate(rng, { w: config.w, h: config.h, ...config.params });
+  const grid = algo.generate(rng, { w, h, ...config.params });
   const ms = (typeof performance !== "undefined" ? performance.now() : 0) - t0;
 
   const ent =

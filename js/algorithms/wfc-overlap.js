@@ -7,7 +7,7 @@ import { makeRNG } from "../rng.js";
 // ---------- 프리셋 샘플 (#=벽, .=바닥) ----------
 export const PRESETS = {
   rooms: [
-    "##########",
+    "###########",
     "#....##...#",
     "#....##...#",
     "#.........#",
@@ -58,10 +58,14 @@ export function packSample(sample) {
   return { w: sample.w, h: sample.h, bits: btoa(bin) };
 }
 export function unpackSample(s) {
-  const bin = atob(s.bits);
-  const cells = new Uint8Array(s.w * s.h);
-  for (let i = 0; i < cells.length; i++) cells[i] = (bin.charCodeAt(i >> 3) >> (i & 7)) & 1;
-  return { w: s.w, h: s.h, cells };
+  try {
+    const bin = atob(s.bits);
+    const cells = new Uint8Array(s.w * s.h);
+    for (let i = 0; i < cells.length; i++) cells[i] = (bin.charCodeAt(i >> 3) >> (i & 7)) & 1;
+    return { w: s.w, h: s.h, cells };
+  } catch {
+    return null; // 오염된 직렬화 → 호출자가 프리셋으로 폴백
+  }
 }
 
 // ---------- 패턴 추출 ----------
@@ -245,8 +249,9 @@ function solve(rng, w, h, patterns, compat, weights) {
 
 export function generate(rng, opts) {
   const { w, h, preset = "rooms", patternN = 2, symmetry = "none", maxTries = 20 } = opts;
-  const N = Math.max(2, Math.min(3, patternN));
-  const sample = opts.sample ? unpackSample(opts.sample) : presetToSample(preset);
+  const N = Number.isFinite(patternN) ? Math.max(2, Math.min(3, Math.round(patternN))) : 2;
+  // 샘플: 오염/누락 시 프리셋으로 폴백
+  const sample = (opts.sample && unpackSample(opts.sample)) || presetToSample(preset);
 
   const patterns = extractPatterns(sample, N, symmetry);
   const weights = patterns.map((p) => p.weight);

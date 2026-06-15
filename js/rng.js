@@ -66,8 +66,8 @@ export function makeRNG(seedStr) {
 let _counter = 0;
 export function randomSeed() {
   _counter = (_counter + 1) >>> 0;
-  const t = Date.now() >>> 0;
-  // 시간/카운터를 mulberry32로 한 번 더 섞어 보기 좋은 짧은 문자열로
+  // 시간 + 세션카운터 + 무작위(리로드 간 같은 ms 충돌 방지). 출력은 비재현 시드 문자열.
+  const t = (Date.now() ^ Math.floor(Math.random() * 0x100000000)) >>> 0;
   const r = mulberry32(t ^ Math.imul(_counter, 0x9e3779b1));
   let s = "";
   for (let i = 0; i < 8; i++) {

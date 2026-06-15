@@ -14,6 +14,7 @@ export function importJSON(file) {
           resolve(null);
           return;
         }
+        const ents = Array.isArray(o.entities) ? o.entities : [];
         resolve({
           v: 3,
           c: 0,
@@ -24,9 +25,8 @@ export function importJSON(file) {
               w: o.w,
               h: o.h,
               p: o.params || {},
-              e: o.entities
-                ? { enabled: true, treasures: o.entities.filter((e) => e.type === "treasure").length }
-                : undefined,
+              // 엔티티 배열이 비어있으면 내보낼 때 비활성이었던 것 → enabled:false 유지
+              e: { enabled: ents.length > 0, treasures: ents.filter((e) => e.type === "treasure").length },
               f: o.floors || 1,
             },
           ],

@@ -32,9 +32,11 @@ function persist(items) {
 }
 
 // entry: { serializedCfg, thumb(dataURL), label }
+let _seq = 0;
 export function save(entry) {
   const items = list();
-  const id = entry.label + "_" + items.length + "_" + (items.reduce((a) => a + 1, 0) + Math.floor(performance.now()));
+  // 세션 내 단조 카운터 + 시간 → 충돌 없는 고유 id
+  const id = Math.floor(performance.now()).toString(36) + "_" + (_seq++).toString(36);
   items.push({ id, ...entry });
   while (items.length > MAX_ITEMS) items.shift();
   persist(items);

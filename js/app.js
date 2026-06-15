@@ -394,15 +394,17 @@ function serializeCfg(cfg) {
 }
 
 function cfgFromSerialized(o) {
-  const algo = getAlgorithm(o.a);
+  const algo = o && getAlgorithm(o.a);
+  if (!algo) return null; // 알 수 없는 알고리즘(구버전 제거/오염) → 거부
   const cfg = newCfg();
   cfg.algoId = o.a;
-  cfg.seed = o.s || "";
-  cfg.w = o.w || 64;
-  cfg.h = o.h || 40;
-  cfg.params = { ...defaultParams(algo), ...(o.p || {}) };
-  cfg.entities = { enabled: true, treasures: 3, ...(o.e || {}) };
-  cfg.floors = o.f || 1;
+  cfg.seed = typeof o.s === "string" ? o.s : "";
+  cfg.w = clampInt(o.w, 16, 200, 64);
+  cfg.h = clampInt(o.h, 16, 200, 40);
+  cfg.params = { ...defaultParams(algo), ...(o.p && typeof o.p === "object" ? o.p : {}) };
+  const e = o.e && typeof o.e === "object" ? o.e : {};
+  cfg.entities = { enabled: e.enabled !== false, treasures: clampInt(e.treasures, 0, 12, 3) };
+  cfg.floors = clampInt(o.f, 1, 8, 1);
   return cfg;
 }
 
@@ -429,9 +431,15 @@ function updateShareCode() {
 }
 
 function applyDecoded(o) {
+  const cfg0 = cfgFromSerialized(o.slots && o.slots[0]);
+  if (!cfg0) {
+    alert("불러올 수 없는 설정입니다(알 수 없는 알고리즘).");
+    return;
+  }
   state.compare.enabled = !!o.c;
-  state.slots[0] = cfgFromSerialized(o.slots[0]);
-  state.slots[1] = o.slots[1] ? cfgFromSerialized(o.slots[1]) : structuredCloneCfg(state.slots[0]);
+  state.slots[0] = cfg0;
+  // 슬롯 B가 유효치 않으면 A 복제로 폴백(크래시 방지)
+  state.slots[1] = (o.slots[1] && cfgFromSerialized(o.slots[1])) || structuredCloneCfg(cfg0);
   state.active = 0;
   syncCompareUI();
   writeCfgToControls(state.slots[0]);

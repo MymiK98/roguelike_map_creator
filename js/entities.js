@@ -25,6 +25,7 @@ export function solutionPath(grid, entities) {
   const start = entities.find((e) => e.type === ENTITY.START);
   const exit = entities.find((e) => e.type === ENTITY.EXIT);
   if (!start || !exit) return null;
+  if (!grid.inBounds(start.x, start.y) || !grid.inBounds(exit.x, exit.y)) return null;
   const dist = bfsDistance(grid, start.x, start.y);
   if (dist[grid.idx(exit.x, exit.y)] < 0) return null;
   const path = [[exit.x, exit.y]];

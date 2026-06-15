@@ -15,7 +15,7 @@ export function* steps(rng, opts) {
   let carved = 1;
 
   let stepsThisAgent = 0;
-  const maxPerAgent = agents > 1 ? Math.floor(target / agents) : Infinity;
+  const maxPerAgent = agents > 1 ? Math.max(1, Math.floor(target / agents)) : Infinity;
   const maxSteps = w * h * 40;
   let steps = 0;
 

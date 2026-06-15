@@ -51,7 +51,11 @@ function primMST(nodes, edges) {
 }
 
 export function generate(rng, opts) {
-  const { w, h, maxRooms = 16, roomMin = 4, roomMax = 9, loopFactor = 0.15, corridor = "L" } = opts;
+  let { w, h, maxRooms = 16, roomMin = 4, roomMax = 9, loopFactor = 0.15, corridor = "L" } = opts;
+  // 방 크기를 맵에 맞게 보정(역방향 rng.int 방지). 정상 파라미터엔 무영향.
+  const cap = Math.max(3, Math.min(w, h) - 3);
+  roomMax = Math.max(3, Math.min(roomMax, cap));
+  roomMin = Math.max(2, Math.min(roomMin, roomMax));
   const grid = new Grid(w, h, WALL);
   const rooms = [];
 
