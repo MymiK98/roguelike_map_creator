@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>로그라이크 맵 생성기</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>🗺️ 로그라이크 맵 생성기</h1>
+      <span class="subtitle">절차적 던전/동굴 생성 · 시드 재현</span>
+    </header>
+
+    <!-- 시작 화면: 알고리즘 선택 -->
+    <main id="start-screen" class="screen">
+      <h2>맵 생성 방법을 선택하세요</h2>
+      <p class="hint">선택 후 시드와 파라미터를 조정해 맵을 생성할 수 있습니다.</p>
+      <div id="algo-cards" class="algo-cards"></div>
+    </main>
+
+    <!-- 생성 화면 -->
+    <main id="generator-screen" class="screen hidden">
+      <div class="generator-layout">
+        <!-- 컨트롤 패널 -->
+        <aside class="panel">
+          <button id="btn-change-algo" class="btn ghost small">← 알고리즘 변경</button>
+          <h2 id="algo-title">알고리즘</h2>
+          <p id="algo-desc" class="algo-desc"></p>
+
+          <div id="edit-target-row" class="edit-target hidden">
+            <span>편집 대상</span>
+            <button id="edit-a" class="btn small active">A</button>
+            <button id="edit-b" class="btn small">B</button>
+          </div>
+
+          <fieldset>
+            <legend>맵 크기</legend>
+            <div class="param-row inline">
+              <label>너비 <input type="number" id="map-w" value="64" min="16" max="200" /></label>
+              <label>높이 <input type="number" id="map-h" value="40" min="16" max="200" /></label>
+            </div>
+            <div class="param-row">
+              <label>층 수 <span class="param-val" id="map-floors-val">1</span></label>
+              <input type="range" id="map-floors" min="1" max="8" step="1" value="1" />
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>시드</legend>
+            <div class="seed-row">
+              <input type="text" id="seed-input" placeholder="시드 입력 또는 랜덤" />
+              <button id="btn-random-seed" class="btn small" title="랜덤 시드">🎲</button>
+            </div>
+            <button id="btn-copy-seed" class="btn ghost small full">시드 복사</button>
+          </fieldset>
+
+          <fieldset>
+            <legend>파라미터</legend>
+            <div id="algo-params"></div>
+          </fieldset>
+
+          <fieldset>
+            <legend>엔티티</legend>
+            <label class="check"><input type="checkbox" id="ent-enabled" checked /> 시작/출구/보물 배치</label>
+            <div class="param-row">
+              <label>보물 수 <span class="param-val" id="ent-treasures-val">3</span></label>
+              <input type="range" id="ent-treasures" min="0" max="12" step="1" value="3" />
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>표시</legend>
+            <label class="check"><input type="checkbox" id="show-grid" /> 격자선 표시</label>
+            <label class="check"><input type="checkbox" id="show-path" /> 솔루션 경로 (시작→출구)</label>
+            <label class="check"><input type="checkbox" id="fov-enabled" /> FOV (맵 클릭으로 시점)</label>
+            <div class="param-row">
+              <label>FOV 반경 <span class="param-val" id="fov-radius-val">8</span></label>
+              <input type="range" id="fov-radius" min="3" max="20" step="1" value="8" />
+            </div>
+          </fieldset>
+
+          <button id="btn-generate" class="btn primary full">맵 생성</button>
+
+          <fieldset id="anim-section">
+            <legend>생성 애니메이션</legend>
+            <div class="param-row inline">
+              <button id="btn-play" class="btn small">▶ 재생</button>
+              <input type="range" id="anim-scrub" min="0" max="0" value="0" style="flex: 1" />
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>내보내기 / 불러오기</legend>
+            <div class="param-row inline">
+              <button id="btn-export-png" class="btn ghost small">PNG 저장</button>
+              <button id="btn-export-json" class="btn ghost small">JSON 저장</button>
+            </div>
+            <label class="btn ghost small full" style="text-align: center; cursor: pointer">
+              JSON 불러오기
+              <input type="file" id="file-json" accept="application/json,.json" hidden />
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>시드 갤러리</legend>
+            <button id="btn-save-gallery" class="btn ghost small full">현재 맵 갤러리에 저장</button>
+            <div id="gallery-list" class="gallery-list"></div>
+          </fieldset>
+
+          <fieldset>
+            <legend>성능 벤치마크</legend>
+            <button id="btn-bench" class="btn ghost small full">전체 알고리즘 벤치마크</button>
+            <div id="bench-result" class="bench-result"></div>
+          </fieldset>
+
+          <fieldset>
+            <legend>공유 코드 (같은 맵 재현)</legend>
+            <textarea id="share-code" rows="3" spellcheck="false"></textarea>
+            <div class="param-row inline">
+              <button id="btn-copy-code" class="btn ghost small">코드 복사</button>
+              <button id="btn-load-code" class="btn ghost small">코드 불러오기</button>
+            </div>
+          </fieldset>
+        </aside>
+
+        <!-- 맵 출력 -->
+        <section class="viewport">
+          <div class="viewport-toolbar">
+            <label class="check"><input type="checkbox" id="compare-mode" /> 비교 모드 (A · B 독립)</label>
+          </div>
+          <div id="compare-grid" class="compare-grid">
+            <div class="map-panel">
+              <div id="floor-nav" class="floor-nav hidden">
+                <button id="floor-prev" class="btn small">▲ 위층</button>
+                <span id="floor-label">층 1/1</span>
+                <button id="floor-next" class="btn small">아래층 ▼</button>
+              </div>
+              <div id="info" class="info"></div>
+              <div class="canvas-wrap"><canvas id="map-canvas"></canvas></div>
+              <div id="legend" class="legend"></div>
+            </div>
+            <div id="panel-b" class="map-panel hidden">
+              <div id="floor-nav-b" class="floor-nav hidden">
+                <button id="floor-prev-b" class="btn small">▲ 위층</button>
+                <span id="floor-label-b">층 1/1</span>
+                <button id="floor-next-b" class="btn small">아래층 ▼</button>
+              </div>
+              <div id="info-b" class="info"></div>
+              <div class="canvas-wrap"><canvas id="map-canvas-b"></canvas></div>
+              <div id="legend-b" class="legend"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
