@@ -1,9 +1,27 @@
 # 🗺️ 로그라이크 맵 생성기 (Roguelike Map Creator)
 
+![algorithms](https://img.shields.io/badge/algorithms-9-c8553d)
+![stack](https://img.shields.io/badge/Vanilla_JS-Canvas-5b8def)
+![dependencies](https://img.shields.io/badge/dependencies-0-5fb878)
+![build](https://img.shields.io/badge/build-none-9aa3b8)
+![seed](https://img.shields.io/badge/seed-reproducible-e8c84a)
+
 웹에서 동작하는 절차적 던전/맵 생성기. 9종 알고리즘을 선택해 실행하고, **시드로 동일한 맵을 재생성**한다.
 빌드 도구 없이 순수 Vanilla JS + HTML5 Canvas — `index.html`만 열면 동작.
 
 > 조사 근거: `docs/roguelike-research.md`, `docs/맵생성-알고리즘-정리.md`
+
+## 미리보기
+
+실제 생성기 출력(시드 고정, 시작🟢·출구🔴·보물🟡 마커):
+
+| BSP 던전 | 셀룰러 동굴 | 그래프(들로네+MST) |
+|---|---|---|
+| ![BSP](assets/bsp.png) | ![Cellular](assets/cellular.png) | ![Graph](assets/graph.png) |
+| **미로** | **하이브리드** | **WFC** |
+| ![Maze](assets/maze.png) | ![Hybrid](assets/hybrid.png) | ![WFC](assets/wfc.png) |
+
+> 이미지는 `node scripts/gen-screenshots.mjs`로 재생성 가능(헤드리스 PNG 인코딩).
 
 ## 실행
 
