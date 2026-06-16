@@ -9,6 +9,8 @@
 웹에서 동작하는 절차적 던전/맵 생성기. 9종 알고리즘을 선택해 실행하고, **시드로 동일한 맵을 재생성**한다.
 빌드 도구 없이 순수 Vanilla JS + HTML5 Canvas — `index.html`만 열면 동작.
 
+**▶ 라이브 데모: https://mymik98.github.io/roguelike_map_creator/**
+
 > 조사 근거: `docs/roguelike-research.md`, `docs/맵생성-알고리즘-정리.md`
 
 ## 미리보기
@@ -25,7 +27,9 @@
 
 ## 실행
 
-빌드 불필요. 정적 서버로 띄운다(ES module이라 `file://` 직접 열기는 CORS로 막힘):
+**바로 쓰기:** https://mymik98.github.io/roguelike_map_creator/ (GitHub Pages 자동 배포)
+
+**로컬 개발:** 빌드 불필요. 정적 서버로 띄운다(ES module이라 `file://` 직접 열기는 CORS로 막힘):
 
 ```bash
 cd roguelike_map_creator
